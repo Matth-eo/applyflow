@@ -4,8 +4,15 @@ import { seedAdmin } from "../prisma/seed.mjs";
 describe("administrator seed", () => {
   it("requires an explicit administrator password before touching the database", async () => {
     const upsert = vi.fn();
-    await expect(seedAdmin({ user: { upsert } })).rejects.toThrow("ADMIN_SEED_PASSWORD");
-    expect(upsert).not.toHaveBeenCalled();
+    vi.stubEnv("ADMIN_SEED_PASSWORD", undefined);
+    try {
+      await expect(seedAdmin({ user: { upsert } })).rejects.toThrow(
+        "ADMIN_SEED_PASSWORD is required to seed the administrator account.",
+      );
+      expect(upsert).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("rejects unsafe override lengths before touching the database", async () => {
