@@ -1,0 +1,58 @@
+name: Validate ApplyFlow
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: applyflow
+          POSTGRES_PASSWORD: local-ci-password
+          POSTGRES_DB: applyflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U applyflow -d applyflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://applyflow:local-ci-password@localhost:5432/applyflow_test
+      DIRECT_URL: postgresql://applyflow:local-ci-password@localhost:5432/applyflow_test
+      AUTH_SECRET: isolated-ci-secret-never-use-in-production
+      AUTH_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run db:deploy
+      - run: npm run build
+      - name: Integration tests against PostgreSQL
+        run: |
+          npm run start > /tmp/applyflow-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3000/login > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          npm run test:integration

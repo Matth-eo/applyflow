@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 216 33% 97%;
+    --foreground: 221 34% 17%;
+    --card: 0 0% 100%;
+    --border: 216 23% 90%;
+    --muted: 216 28% 95%;
+    --muted-foreground: 215 15% 43%;
+    --primary: 168 76% 27%;
+    --primary-foreground: 0 0% 100%;
+    --destructive: 350 75% 43%;
+  }
+  .dark {
+    --background: 222 36% 9%;
+    --foreground: 214 26% 93%;
+    --card: 222 29% 13%;
+    --border: 219 23% 23%;
+    --muted: 222 25% 18%;
+    --muted-foreground: 216 18% 66%;
+    --primary: 167 66% 39%;
+    --primary-foreground: 222 36% 8%;
+    --destructive: 350 90% 72%;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+@layer components {
+  .field {
+    @apply flex w-full rounded-lg border bg-card px-3 py-2.5 text-sm shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .panel {
+    @apply rounded-xl border border-border/60 bg-card shadow-card;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground;
+  }
+  .section-title {
+    @apply text-base font-semibold tracking-tight sm:text-lg;
+  }
+  .page-title {
+    @apply break-words text-3xl font-semibold leading-tight tracking-[-0.035em] sm:text-4xl;
+  }
+  .metric-value {
+    @apply font-semibold tabular-nums tracking-[-0.04em];
+  }
+  .quiet-surface {
+    @apply rounded-2xl bg-card shadow-card;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
